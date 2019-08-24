@@ -36,7 +36,7 @@ class Api {
   */
   async post(url = '', data = {}) {
 
-    if (this.requestOptions.fake || typeof url !== 'string'){
+    if (typeof url !== 'string'){
       return url
     }
 

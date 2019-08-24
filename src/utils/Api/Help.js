@@ -10,7 +10,6 @@ let config = {
   },
   mode: 'cors',//no-cors, cors, *same-origin
   cache: 'no-cache',//no-cache,reload,force-cache,only-if-cached
-  fake : true,
 }
 const API = new Api(config)
 
