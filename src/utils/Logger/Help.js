@@ -9,7 +9,7 @@ let config = {
   client: true,
   serverLevels: {
     info: true,
-    warning: false,
+    warning: true,
     error: true,
   },
   mapping: {

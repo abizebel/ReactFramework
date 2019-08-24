@@ -7,7 +7,6 @@
  ******************************************************************************************/
 
 
-
 /**
  * IoC container class
  * 
@@ -20,59 +19,57 @@
 class Ioc {
   constructor() {
     this.container = {};
-    this.cache = {};
     this.mocks = {}
+  }
 
+  /**
+   * Get name of dependency that can be function or string
+   */
+  getName = (item) => {
+    if (typeof item === 'function') {
+     return this.extractName(item).toLowerCase();
+    }
+    else {
+      return item.toLowerCase();
+    }
   }
 
   /**
    * Register a module to IoC container
    * 
    * @param {String} name is the module name
-   * @param {Function} classConstructor is a class 
+   * @param {Function} dep is a dependency class 
    * @returns return true when defining a module that was not previously defined
    */
-  register = (ooo, classConstructor)=>{
-    let name;
-    if (typeof ooo === 'function') {
-      name = this.extractName(ooo).toLocaleLowerCase();
-      this.mocks[name] = classConstructor
-    }
-    else {
-       name = ooo.toLowerCase();
-    }
+  register = (name, dep) => {
+    let nameStr = this.getName(name);
 
-    if (this.container[name])  return;
-      //throw new Error(`adding ${name} to container failed, because its already exists.`)
-
-    this.container[name] = classConstructor;
+    this.container[nameStr] = dep;
   }
 
-
-
-
-  gene
   /**
    * Resolve a injected module
    * 
    * @param {String} name is the name of requested module
    */
-  resolve = (name, lifeCycle = 'Singleton') => {
-    let name = name.toLowerCase();
+  resolve = (name) => {
+    let nameStr = this.getName(name);
 
-    if (this.mocks[name]) return new this.mocks[name]();
-
-    if (lifeCycle == 'Singleton' && this.cache[name]) return this.cache[name];
-
-    if (!this.container[name]) return undefined;
-
-    let instance = new this.container[name]();
-
-    if (lifeCycle == 'Singleton') this.cache[name] = instance;
-    
-    return instance;
+    if (this.mocks[nameStr]) return this.createInstance(this.mocks[nameStr]);
+    if (this.container[nameStr]) return this.createInstance(this.container[nameStr]);
+    if (!this.container[nameStr]) return undefined;
   }
-
+  
+  /**
+   * Crate instance 
+   */
+  createInstance(dependency){
+    try {
+      return new dependency();
+    } catch (err) {
+      return dependency;
+    }
+  }
 
   /**
    * Extract arguments of function
@@ -103,6 +100,7 @@ class Ioc {
     let FN_NAME = /^\s*function\s*([^\(]*)/,
       fnText = fn.toString(),
       regResult = fnText.match(FN_NAME);
+
     return regResult[1]
   }
 
@@ -113,6 +111,7 @@ class Ioc {
    */
   inject = (target, key) => {
     let obj = this.resolve(key)
+
     const getter = function () {
       return obj;
     };
@@ -130,15 +129,22 @@ class Ioc {
    * @param {Object} target class prototype
    */
   injectable = (target) => {
+    debugger
     let name = this.extractName(target)
     this.register(name, target)
   }
 
-
+  /**
+   * Mock a dependency
+   * 
+   * @param {Object} name 
+   * @param {Object} mockObject class
+   */
   mock = (name, mockObject) => {
-    let name = name.toLowerCase();
-    this.mocks[name] = mockObject;
+    let nameStr = this.getName(name);
+    this.mocks[nameStr] = mockObject;
   }
+
 }
 
 var IOC = new Ioc();
